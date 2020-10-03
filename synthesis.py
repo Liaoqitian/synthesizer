@@ -1,28 +1,9 @@
 from z3 import *
 import sys
-num_instrs = int(sys.argv[1]) # how many instructions will we allow in our output program?
+# num_instrs = int(sys.argv[1]) # how many instructions will we allow in our output program?
 # try: 1 or 2
 
 # four instructions: 0 - left, 1 - right, 2 - up, 3 - down
-
-# def run_instr(pos, instr, arg, envir):
-# 	return if_wrapper(instr == 0,
-# 		# left
-# 			if_wrapper(pos % 4 - arg >= 0, pos - arg, pos - pos % 4),
-# 			if_wrapper(instr == 1,
-# 			# right
-# 				if_wrapper(pos % 4 + arg <= 3, pos + arg, pos + 3 - pos % 4), 
-# 				if_wrapper(instr == 2, 
-# 					# up
-# 					if_wrapper(pos / 4 - arg >= 0, pos - arg * 4, pos % 4), 
-# 					if_wrapper(instr == 3,
-# 						# down 
-# 						if_wrapper(pos / 4 + arg <= 3, pos + arg * 4, envir - 4 + pos % 4), 
-# 						pos
-# 						)
-# 					)
-# 				)
-# 			)
 
 # length = 4, width = 3 matrix 
 # 0  1  2  3 
@@ -113,23 +94,31 @@ def print_model(model, instrs):
 		else:
 			print("-")
 
-instrs = gen_instrs(num_instrs) # generate BVs to represent instructions
-# args = gen_args(num_instrs) # generate BVs to represent arguments
-goal = run_prog(1, instrs, 16, 4, 4) == 15
+
 
 # instrs = [0, 1, 2, 3] # generate BVs to represent instructions
 # args = [3, 0, 0, 2] # generate BVs to represent arguments
 # goal = run_prog(7, instrs, args, 16) == 12 # where do we want our robot to move?
 
-s = Solver()
-s.add(goal)
-# for i in range(num_instrs):
-# 	s.add(And(args[i] >= 0, args[i] < 4))
+num_instrs = 1
+while True: 
+	s = Solver()
+	instrs = gen_instrs(num_instrs) # generate BVs to represent instructions
+	# args = gen_args(num_instrs) # generate BVs to represent arguments
+	goal = run_prog(1, instrs, 16, 4, 4) == 15
+	s.add(goal)
+	# for i in range(num_instrs):
+	# 	s.add(And(args[i] >= 0, args[i] < 4))
 
-satisfiable = s.check()
-print("satisfiable?", satisfiable)
+	satisfiable = s.check()
+	print("satisfiable?", satisfiable, num_instrs)
 
-if (satisfiable == sat):
-	model = s.model()
-	print_model(model, instrs) # print the program if we found one
-	print(model) # print the model, just to visualize what's happening underneath
+	if (satisfiable == sat):
+		model = s.model()
+		print_model(model, instrs) # print the program if we found one
+		print(model) # print the model, just to visualize what's happening underneath
+		break 
+	num_instrs += 1
+
+
+
