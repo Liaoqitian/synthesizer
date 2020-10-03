@@ -94,8 +94,6 @@ def print_model(model, instrs):
 		else:
 			print("-")
 
-
-
 # instrs = [0, 1, 2, 3] # generate BVs to represent instructions
 # args = [3, 0, 0, 2] # generate BVs to represent arguments
 # goal = run_prog(7, instrs, args, 16) == 12 # where do we want our robot to move?
