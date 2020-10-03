@@ -30,19 +30,19 @@ num_instrs = int(sys.argv[1]) # how many instructions will we allow in our outpu
 # 8  9  10 11
 
 
-def run_instr(pos, instr, arg, envir, length, width):
+def run_instr(pos, instr, envir, length, width):
 	return If(instr == 0,
 		# left
-			If(pos % length - arg >= 0, pos - arg, False),
+			If(pos % length - 1 >= 0, pos - 1, False),
 			If(instr == 1,
 			# right
-				If(pos % length + arg <= length - 1, pos + arg, False), 
+				If(pos % length + 1 <= length - 1, pos + 1, False), 
 				If(instr == 2, 
 					# up
-					If(pos / length - arg >= 0, pos - arg * length, False), 
+					If(pos / length - 1 >= 0, pos - length, False), 
 					If(instr == 3,
 						# down 
-						If(pos / length + arg <= width - 1, pos + arg * length, False), 
+						If(pos / length + 1 <= width - 1, pos + length, False), 
 						pos
 						)
 					)
@@ -76,11 +76,14 @@ def if_wrapper(cond, t, f):
 		return f
 	return If(cond, t, f)			
 
+def check_obstacle(pos, obs):
+	return pos in obs
+
 # what's the effect of running the whole program?  where does the robot end up?
-def run_prog(pos, instrs, args, envir, length, width):
+def run_prog(pos, instrs, envir, length, width):
 	curr_pos = pos
 	for i in range(len(instrs)):
-		curr_pos = run_instr(curr_pos, instrs[i], args[i], envir, length, width)
+		curr_pos = run_instr(curr_pos, instrs[i], envir, length, width)
 	return curr_pos
 
 # let's make some Z3 bitvectors that we'll use to search the space of instructions
@@ -93,26 +96,26 @@ def gen_args(num_instrs):
 	return [Int('a_' + str(i)) for i in range(num_instrs)]
 
 # a convenience function for printing the Z3 output to look like a sequence of instructions
-def print_model(model, instrs, args):
+def print_model(model, instrs):
 	for i in range(len(instrs)):
 		val = model.eval(instrs[i])
-		arg = model.eval(args[i])
+		# arg = model.eval(args[i])
 		# val = instrs[i]
 		# arg = args[i]
 		if (val == 0):
-			print("L", arg)
+			print("L")
 		elif (val == 1):
-			print("R", arg)
+			print("R")
 		elif (val == 2):
-			print("U", arg)
+			print("U")
 		elif (val == 3): 
-			print("D", arg)
+			print("D")
 		else:
 			print("-")
 
 instrs = gen_instrs(num_instrs) # generate BVs to represent instructions
-args = gen_args(num_instrs) # generate BVs to represent arguments
-goal = run_prog(1, instrs, args, 16, 4, 4) == 15
+# args = gen_args(num_instrs) # generate BVs to represent arguments
+goal = run_prog(1, instrs, 16, 4, 4) == 15
 
 # instrs = [0, 1, 2, 3] # generate BVs to represent instructions
 # args = [3, 0, 0, 2] # generate BVs to represent arguments
@@ -120,13 +123,13 @@ goal = run_prog(1, instrs, args, 16, 4, 4) == 15
 
 s = Solver()
 s.add(goal)
-for i in range(num_instrs):
-	s.add(And(args[i] >= 0, args[i] < 4))
+# for i in range(num_instrs):
+# 	s.add(And(args[i] >= 0, args[i] < 4))
 
 satisfiable = s.check()
 print("satisfiable?", satisfiable)
 
 if (satisfiable == sat):
 	model = s.model()
-	print_model(model, instrs, args) # print the program if we found one
+	print_model(model, instrs) # print the program if we found one
 	print(model) # print the model, just to visualize what's happening underneath
