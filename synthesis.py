@@ -46,8 +46,8 @@ def check_obstacle(pos, obs):
 	# return False
 	if debug: 
 		return pos in obs
-	temp = [pos == obs[i] for i in range(len(obs))]
-	return Or(temp)
+	res = [pos == obs[i] for i in range(len(obs))]
+	return Or(res)
 
 # what's the effect of running the whole program?  where does the robot end up?
 def run_prog(pos, instrs, envir, length, width, obs):
@@ -59,10 +59,6 @@ def run_prog(pos, instrs, envir, length, width, obs):
 # let's make some Z3 bitvectors that we'll use to search the space of instructions
 def gen_instrs(num_instrs):
 	return [BitVec('x_' + str(i), 2) for i in range(num_instrs)]
-
-# # let's make some Z3 bitvectors that we'll use to search the space of arguments
-# def gen_args(num_instrs):
-# 	return [Int('a_' + str(i)) for i in range(num_instrs)]
 
 # a convenience function for printing the Z3 output to look like a sequence of instructions
 def print_model(model, instrs):
@@ -80,10 +76,8 @@ def print_model(model, instrs):
 		else:
 			print("-")
 
-# instrs = [0, 1, 2, 3] # generate BVs to represent instructions
-# args = [3, 0, 0, 2] # generate BVs to represent arguments
-# goal = run_prog(7, instrs, args, 16) == 12 # where do we want our robot to move?
 
+# parameters of the goal
 pos, envir, length, width, dest = 7, 16, 4, 4, 12
 obs = [6, 11]
 
