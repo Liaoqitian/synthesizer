@@ -11,22 +11,22 @@ import sys
 # 8  9  10 11
 
 def run_instr(pos, instr, envir, length, width, obs):
-	return If(instr == 0,
+	return if_wrapper(instr == 0,
 			# left
-				If(pos % length - 1 >= 0, 
-					If(check_obstacle(pos - 1, obs), pos, pos - 1), pos),
-				If(instr == 1,
+				if_wrapper(pos % length - 1 >= 0, 
+					if_wrapper(check_obstacle(pos - 1, obs), pos, pos - 1), pos),
+				if_wrapper(instr == 1,
 				# right
-					If(pos % length + 1 <= length - 1, 
-						If(check_obstacle(pos + 1, obs), pos, pos + 1), pos), 
-					If(instr == 2, 
+					if_wrapper(pos % length + 1 <= length - 1, 
+						if_wrapper(check_obstacle(pos + 1, obs), pos, pos + 1), pos), 
+					if_wrapper(instr == 2, 
 						# up
-						If(pos / length - 1 >= 0, 
-							If(check_obstacle(pos - length, obs), pos, pos - length), pos), 
-						If(instr == 3,
+						if_wrapper(pos / length - 1 >= 0, 
+							if_wrapper(check_obstacle(pos - length, obs), pos, pos - length), pos), 
+						if_wrapper(instr == 3,
 							# down 
-							If(pos / length + 1 <= width - 1, 
-								If(check_obstacle(pos + length, obs), pos, pos + length), pos), 
+							if_wrapper(pos / length + 1 < width, 
+								if_wrapper(check_obstacle(pos + length, obs), pos, pos + length), pos), 
 							pos
 							)
 						)
@@ -34,7 +34,7 @@ def run_instr(pos, instr, envir, length, width, obs):
 				)
 
 
-debug = True
+debug = False
 def if_wrapper(cond, t, f):
 	if debug:
 		if cond:
@@ -82,13 +82,15 @@ def print_model(model, instrs):
 # goal = run_prog(7, instrs, args, 16) == 12 # where do we want our robot to move?
 
 pos, envir, length, width, dest = 1, 16, 4, 4, 15
-obs = [5, 6, 7]
+obs = [5]
 
+# Iterative Deepening
 num_instrs = 1
 while num_instrs < envir: 
 	s = Solver()
 	instrs = gen_instrs(num_instrs) # generate BVs to represent instructions
 	# args = gen_args(num_instrs) # generate BVs to represent arguments
+	# instrs = [1, 3, 3, 3, 1]
 	goal = run_prog(pos, instrs, envir, length, width, obs) == dest
 	s.add(goal)
 	# for i in range(num_instrs):
