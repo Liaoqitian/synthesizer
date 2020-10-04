@@ -43,7 +43,11 @@ def if_wrapper(cond, t, f):
 	return If(cond, t, f)			
 
 def check_obstacle(pos, obs):
-	return pos in obs
+	# return False
+	if debug: 
+		return pos in obs
+	temp = [pos == obs[i] for i in range(len(obs))]
+	return Or(temp)
 
 # what's the effect of running the whole program?  where does the robot end up?
 def run_prog(pos, instrs, envir, length, width, obs):
@@ -81,19 +85,16 @@ def print_model(model, instrs):
 # goal = run_prog(7, instrs, args, 16) == 12 # where do we want our robot to move?
 
 pos, envir, length, width, dest = 7, 16, 4, 4, 12
-obs = [5, 6]
+obs = [6, 11]
 
 # Iterative Deepening
 num_instrs = 1
 while num_instrs < envir: 
 	s = Solver()
 	instrs = gen_instrs(num_instrs) # generate BVs to represent instructions
-	# args = gen_args(num_instrs) # generate BVs to represent arguments
-	# instrs = [1, 3, 3, 3, 1]
+	# instrs = [0, 0, 0, 3, 3]
 	goal = run_prog(pos, instrs, envir, length, width, obs) == dest
 	s.add(goal)
-	# for i in range(num_instrs):
-	# 	s.add(And(args[i] >= 0, args[i] < 4))
 
 	satisfiable = s.check()
 	print("satisfiable?", satisfiable, num_instrs)
