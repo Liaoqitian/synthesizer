@@ -10,24 +10,23 @@ import sys
 # 4  5  6  7 
 # 8  9  10 11
 
-
 def run_instr(pos, instr, envir, length, width, obs):
 	return If(instr == 0,
 			# left
 				If(pos % length - 1 >= 0, 
-					If(check_obstacle(pos - 1, obs), pos, pos - 1), False),
+					If(check_obstacle(pos - 1, obs), pos, pos - 1), pos),
 				If(instr == 1,
 				# right
 					If(pos % length + 1 <= length - 1, 
-						If(check_obstacle(pos + 1, obs), pos, pos + 1), False), 
+						If(check_obstacle(pos + 1, obs), pos, pos + 1), pos), 
 					If(instr == 2, 
 						# up
 						If(pos / length - 1 >= 0, 
-							If(check_obstacle(pos - length, obs), pos, pos - length), False), 
+							If(check_obstacle(pos - length, obs), pos, pos - length), pos), 
 						If(instr == 3,
 							# down 
 							If(pos / length + 1 <= width - 1, 
-								If(check_obstacle(pos + length, obs), pos, pos + length), False), 
+								If(check_obstacle(pos + length, obs), pos, pos + length), pos), 
 							pos
 							)
 						)
@@ -55,19 +54,17 @@ def run_prog(pos, instrs, envir, length, width, obs):
 
 # let's make some Z3 bitvectors that we'll use to search the space of instructions
 def gen_instrs(num_instrs):
-	return [Int('x_' + str(i)) for i in range(num_instrs)]
+	return [BitVec('x_' + str(i), 2) for i in range(num_instrs)]
 
 
-# let's make some Z3 bitvectors that we'll use to search the space of arguments
-def gen_args(num_instrs):
-	return [Int('a_' + str(i)) for i in range(num_instrs)]
+# # let's make some Z3 bitvectors that we'll use to search the space of arguments
+# def gen_args(num_instrs):
+# 	return [Int('a_' + str(i)) for i in range(num_instrs)]
 
 # a convenience function for printing the Z3 output to look like a sequence of instructions
 def print_model(model, instrs):
 	for i in range(len(instrs)):
 		val = model.eval(instrs[i])
-		# arg = model.eval(args[i])
-		# val = instrs[i]
 		# arg = args[i]
 		if (val == 0):
 			print("L")
@@ -85,7 +82,7 @@ def print_model(model, instrs):
 # goal = run_prog(7, instrs, args, 16) == 12 # where do we want our robot to move?
 
 pos, envir, length, width, dest = 1, 16, 4, 4, 15
-obs = [3, 5, 9, 10]
+obs = [5, 6, 7]
 
 num_instrs = 1
 while num_instrs < envir: 
