@@ -11,43 +11,29 @@ import sys
 # 8  9  10 11
 
 
-def run_instr(pos, instr, envir, length, width):
+def run_instr(pos, instr, envir, length, width, obs):
 	return If(instr == 0,
-		# left
-			If(pos % length - 1 >= 0, pos - 1, False),
-			If(instr == 1,
-			# right
-				If(pos % length + 1 <= length - 1, pos + 1, False), 
-				If(instr == 2, 
-					# up
-					If(pos / length - 1 >= 0, pos - length, False), 
-					If(instr == 3,
-						# down 
-						If(pos / length + 1 <= width - 1, pos + length, False), 
-						pos
+			# left
+				If(pos % length - 1 >= 0, 
+					If(check_obstacle(pos - 1, obs), pos, pos - 1), False),
+				If(instr == 1,
+				# right
+					If(pos % length + 1 <= length - 1, 
+						If(check_obstacle(pos + 1, obs), pos, pos + 1), False), 
+					If(instr == 2, 
+						# up
+						If(pos / length - 1 >= 0, 
+							If(check_obstacle(pos - length, obs), pos, pos - length), False), 
+						If(instr == 3,
+							# down 
+							If(pos / length + 1 <= width - 1, 
+								If(check_obstacle(pos + length, obs), pos, pos + length), False), 
+							pos
+							)
 						)
 					)
 				)
-			)
 
-# def run_instr(pos, instr, arg, envir, length, width):
-# 	return If(instr == 0,
-# 		# left
-# 			If(pos % length - arg >= 0, pos - arg, pos - pos % length),
-# 			If(instr == 1,
-# 			# right
-# 				If(pos % length + arg <= length - 1, pos + arg, pos + length - 1 - pos % length), 
-# 				If(instr == 2, 
-# 					# up
-# 					If(pos / length - arg >= 0, pos - arg * length, pos % length), 
-# 					If(instr == 3,
-# 						# down 
-# 						If(pos / length + arg <= width - 1, pos + arg * length, envir - (length - 1) + pos % length), 
-# 						pos
-# 						)
-# 					)
-# 				)
-# 			)
 
 debug = True
 def if_wrapper(cond, t, f):
@@ -61,10 +47,10 @@ def check_obstacle(pos, obs):
 	return pos in obs
 
 # what's the effect of running the whole program?  where does the robot end up?
-def run_prog(pos, instrs, envir, length, width):
+def run_prog(pos, instrs, envir, length, width, obs):
 	curr_pos = pos
 	for i in range(len(instrs)):
-		curr_pos = run_instr(curr_pos, instrs[i], envir, length, width)
+		curr_pos = run_instr(curr_pos, instrs[i], envir, length, width, obs)
 	return curr_pos
 
 # let's make some Z3 bitvectors that we'll use to search the space of instructions
@@ -98,12 +84,15 @@ def print_model(model, instrs):
 # args = [3, 0, 0, 2] # generate BVs to represent arguments
 # goal = run_prog(7, instrs, args, 16) == 12 # where do we want our robot to move?
 
+pos, envir, length, width, dest = 1, 16, 4, 4, 15
+obs = [3, 5, 9, 10]
+
 num_instrs = 1
-while True: 
+while num_instrs < envir: 
 	s = Solver()
 	instrs = gen_instrs(num_instrs) # generate BVs to represent instructions
 	# args = gen_args(num_instrs) # generate BVs to represent arguments
-	goal = run_prog(1, instrs, 16, 4, 4) == 15
+	goal = run_prog(pos, instrs, envir, length, width, obs) == dest
 	s.add(goal)
 	# for i in range(num_instrs):
 	# 	s.add(And(args[i] >= 0, args[i] < 4))
