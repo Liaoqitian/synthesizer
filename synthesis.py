@@ -56,7 +56,6 @@ def run_prog(pos, instrs, envir, length, width, obs):
 def gen_instrs(num_instrs):
 	return [BitVec('x_' + str(i), 2) for i in range(num_instrs)]
 
-
 # # let's make some Z3 bitvectors that we'll use to search the space of arguments
 # def gen_args(num_instrs):
 # 	return [Int('a_' + str(i)) for i in range(num_instrs)]
@@ -81,8 +80,8 @@ def print_model(model, instrs):
 # args = [3, 0, 0, 2] # generate BVs to represent arguments
 # goal = run_prog(7, instrs, args, 16) == 12 # where do we want our robot to move?
 
-pos, envir, length, width, dest = 1, 16, 4, 4, 15
-obs = [5]
+pos, envir, length, width, dest = 7, 16, 4, 4, 12
+obs = [5, 6]
 
 # Iterative Deepening
 num_instrs = 1
